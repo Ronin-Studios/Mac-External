@@ -14,7 +14,7 @@ C_PURPLE="\033[38;2;105;52;175m"
 
 get_time() {
     local s=""
-    local mot="RoninMac"
+    local mot="Ronin"
     local couleurs=("180;120;255" "160;100;245" "140;85;230" "120;70;210" "105;52;175" "95;45;160" "85;40;145" "75;35;130")
     for ((i=0; i<${#mot}; i++)); do
         s+="\033[38;2;${couleurs[$i]}m${mot:$i:1}"
@@ -134,7 +134,7 @@ banner() {
     printf "${C_PURPLE}      ██╔══██╗ ██║   ██║██║╚██╗██║██║██║╚██╗██║${C_RESET}\n"
     printf "${C_PURPLE}      ██║  ██║ ╚██████╔╝██║ ╚████║██║██║ ╚████║${C_RESET}\n"
     printf "${C_PURPLE}      ╚═╝  ╚═╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═══╝${C_RESET}\n"
-    printf "  %b  ${C_BOLD}Installer${C_RESET}\n" "$(printf "\033[38;2;105;52;175m%s\033[0m" "RoninMac")"
+    printf "  %b  ${C_BOLD}Installer${C_RESET}\n" "$(printf "\033[38;2;105;52;175m%s\033[0m" "Ronin")"
     echo ""
 }
 
@@ -163,34 +163,34 @@ killall -9 Ronin        2>/dev/null
 banner
 
 echo ""
-log "Choose your installation:"
+log "Select Architecture::"
 echo ""
 echo "   1) ARM (Apple Silicon)"
 echo "   2) Intel"
-echo "   3) Auto-detect"
+echo "   3) Auto-Detect"
 echo ""
 
 archi=""
 while [[ -z "$archi" ]]; do
     printf "%b " "$(get_time)"
-    read -r -p "Enter your choice [1/2/3]: " choice </dev/tty
+    read -r -p "Select: [1/2/3]: " choice </dev/tty
     case "$choice" in
-        1) archi="arm";   log "you chose ARM" ;;
-        2) archi="intel"; log "you chose Intel" ;;
+        1) archi="arm";   log "You've Selected: ARM" ;;
+        2) archi="intel"; log "You've Selected: Intel" ;;
         3)
-            spinner_start "detecting architecture..."
+            spinner_start "Scanning Architecture.."
             sleep 0.4
             archi=$(detect_arch)
             if [[ "$archi" == "arm" ]]; then
-                spinner_stop ok "detected ARM (Apple Silicon)"
+                spinner_stop ok "Detected: ARM (Apple Silicon)"
             elif [[ "$archi" == "intel" ]]; then
-                spinner_stop ok "detected Intel"
+                spinner_stop ok "Detected: Intel"
             else
-                spinner_stop fail "unsupported architecture"
+                spinner_stop fail "Unsupported Architecture!"
                 exit 1
             fi
             ;;
-        *) log "${C_RED}invalid choice${C_RESET}, please type 1, 2 or 3" ;;
+        *) log "${C_RED}invalid choice${C_RESET}, Please type 1, 2 or 3" ;;
     esac
 done
 
@@ -254,8 +254,8 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 echo ""
-log "${C_CYAN}admin access required${C_RESET} — enter your mac password if asked"
-sudo -v || die "admin permission denied"
+log "${C_CYAN}admin access required${C_RESET} — Insert Mac Password."
+sudo -v || die "Administrator Permissions Denied!"
 (
     while true; do
         sudo -n true
@@ -267,79 +267,79 @@ SUDO_KEEPALIVE_PID=$!
 disown "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
 log "${C_GREEN}admin granted${C_RESET}"
 
-spinner_start "removing old roblox..."
+spinner_start "Removing Outdated Roblox Version.."
 sudo -n killall -9 Roblox 2>/dev/null
 sudo -n rm -rf "/Applications/Roblox.app"
 sudo -n rm -rf "/Applications/RobloxPlayer.app"
-spinner_stop ok "old roblox removed"
+spinner_stop ok "Outdated Roblox Version Removed!"
 
-spinner_start "fetching roblox build info..."
+spinner_start "Fetching Roblox Build Info.."
 RO_VERSION=$(curl -fsS -m 10 "${ROBLOX_API}" | grep -oE '"clientVersionUpload":"[^"]*"' | cut -d'"' -f4)
 [[ -z "$RO_VERSION" ]] && RO_VERSION=$(curl -fsS -m 10 "${ROBLOX_API_FALLBACK}" | grep -oE '"clientVersionUpload":"[^"]*"' | cut -d'"' -f4)
-[[ -z "$RO_VERSION" ]] && { spinner_stop fail "could not fetch roblox version"; exit 1; }
+[[ -z "$RO_VERSION" ]] && { spinner_stop fail "Could Not Fetch Roblox Version!"; exit 1; }
 spinner_stop ok "roblox build : ${RO_VERSION}"
 
 URL="${ROBLOX_ZIP_URL_BASE}/${RO_VERSION}-RobloxPlayer.zip"
 OUT="/tmp/RobloxPlayer.zip"
-download_with_progress "$URL" "$OUT" "downloading roblox " || die "failed downloading roblox"
+download_with_progress "$URL" "$OUT" "Downloading Roblox " || die "Roblox Download Failed "
 
-spinner_start "unpacking roblox..."
+spinner_start "Unpacking Roblox.."
 cd /tmp || die "cannot cd /tmp"
-unzip -o -q "$OUT" || { spinner_stop fail "unzip failed"; exit 1; }
+unzip -o -q "$OUT" || { spinner_stop fail "Unzipping Failed!"; exit 1; }
 mv "/tmp/RobloxPlayer.app" "/Applications/Roblox.app"
 rm -f "$OUT"
-[ -d "${ROBLOX_APP}" ] || { spinner_stop fail "roblox install failed"; exit 1; }
-spinner_stop ok "roblox installed"
+[ -d "${ROBLOX_APP}" ] || { spinner_stop fail "Roblox Installation Failed!"; exit 1; }
+spinner_stop ok "Roblox Installed!"
 
-spinner_start "preparing roblox..."
+spinner_start "Preparing Roblox.."
 sudo -n xattr -cr "${ROBLOX_APP}" || true
 sudo -n codesign --force --sign - "${ROBLOX_APP}/Contents/MacOS/RobloxPlayer" 2>/dev/null || true
-spinner_stop ok "roblox prepared"
+spinner_stop ok "Roblox Prepared!"
 
-download_with_progress "${DMG_URL}" "${DMG_PATH}" "downloading roninmac" || die "failed downloading dmg"
-[ -f "${DMG_PATH}" ] || die "missing dmg"
+download_with_progress "${DMG_URL}" "${DMG_PATH}" "Downloading Ronin.." || die "Dmg Download Failed!"
+[ -f "${DMG_PATH}" ] || die "Missing Dmg!"
 
-spinner_start "mounting dmg..."
+spinner_start "Mounting Dmg.."
 MOUNT_PATH="$(hdiutil attach "${DMG_PATH}" -nobrowse -noautoopen 2>/dev/null | awk -F'\t' '/\/Volumes\// {print $NF; exit}')"
-[ -n "${MOUNT_PATH}" ] || { spinner_stop fail "mount failed"; exit 1; }
-spinner_stop ok "dmg mounted"
+[ -n "${MOUNT_PATH}" ] || { spinner_stop fail "Mounting Failed!"; exit 1; }
+spinner_stop ok "Dmg Mounted Successfully!"
 
 APP_NAME="$(ls "${MOUNT_PATH}" | grep '\.app$' | head -n 1)"
-[ -n "${APP_NAME}" ] || die "no app found in dmg"
+[ -n "${APP_NAME}" ] || die "No Application Found In Dmg!"
 
 TARGET_PATH="${INSTALL_DIR}/${APP_NAME}"
 
 spinner_start "installing ${APP_NAME}..."
 sudo -n rm -rf "${TARGET_PATH}"
-sudo -n cp -R "${MOUNT_PATH}/${APP_NAME}" "${INSTALL_DIR}/" || { spinner_stop fail "install failed"; exit 1; }
+sudo -n cp -R "${MOUNT_PATH}/${APP_NAME}" "${INSTALL_DIR}/" || { spinner_stop fail "Installation Failed!"; exit 1; }
 hdiutil detach "${MOUNT_PATH}" -quiet
 MOUNT_PATH=""
 spinner_stop ok "${APP_NAME} installed"
 
-spinner_start "removing quarantine..."
+spinner_start "Removing Quarantine.."
 sudo -n xattr -rd com.apple.quarantine "${TARGET_PATH}" 2>/dev/null || true
 sudo -n xattr -cr "${TARGET_PATH}"
-spinner_stop ok "quarantine removed"
+spinner_stop ok "Quarantine Removed!"
 
-spinner_start "signing app..."
+spinner_start "Signing Application.."
 sudo -n codesign --force --deep --sign - --entitlements "${PLIST_PATH}" "${TARGET_PATH}" >/dev/null 2>&1 \
-    || { spinner_stop fail "codesign failed"; exit 1; }
-spinner_stop ok "app signed"
+    || { spinner_stop fail "Codesign Failed!"; exit 1; }
+spinner_stop ok "Application Signed!"
 
-spinner_start "verifying signature..."
+spinner_start "Verifying Signature.."
 sudo -n codesign --verify --deep "${TARGET_PATH}" 2>/dev/null
-spinner_stop ok "signature verified"
+spinner_stop ok "Signature Verified!"
 
-spinner_start "launching roblox..."
+spinner_start "Launching Roblox.."
 open "/Applications/Roblox.app"
 sleep 5
-spinner_stop ok "roblox launched"
+spinner_stop ok "Roblox Launched!"
 
-spinner_start "launching roninmac..."
+spinner_start "Launching Ronin.."
 sleep 1
 open "${TARGET_PATH}"
-spinner_stop ok "roninmac launched"
+spinner_stop ok "Ronin Launched!"
 
 echo ""
-printf "  ${C_GREEN}✔  All done — enjoy RoninMac ${C_RESET}\n"
+printf "  ${C_GREEN}✔  All done — enjoy Ronin ${C_RESET}\n"
 echo ""
