@@ -153,7 +153,7 @@ detect_arch() {
     esac
 }
 
-RAW_BASE="https://getronin.xyz/mac-installer.sh"
+RAW_BASE="https://raw.githubusercontent.com/Ronin-Studios/Mac-External/main"
 
 killall -9 Roblox       2>/dev/null
 killall -9 RobloxPlayer 2>/dev/null
