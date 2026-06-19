@@ -290,7 +290,7 @@ mv "/tmp/RobloxPlayer.app" "/Applications/Roblox.app"
 rm -f "$OUT"
 [ -d "${ROBLOX_APP}" ] || { spinner_stop fail "Roblox Installation Failed!"; exit 1; }
 
-sudo -n rm -rf "${ROBLOX_APP}/Contents/MacOS/RobloxPlayerInstaller.app" 2>/dev/null || true
+#to see if we really need to delete installer
 
 spinner_stop ok "Roblox Installed!"
 
