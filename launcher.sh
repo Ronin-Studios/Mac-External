@@ -289,9 +289,6 @@ unzip -o -q "$OUT" || { spinner_stop fail "Unzipping Failed!"; exit 1; }
 mv "/tmp/RobloxPlayer.app" "/Applications/Roblox.app"
 rm -f "$OUT"
 [ -d "${ROBLOX_APP}" ] || { spinner_stop fail "Roblox Installation Failed!"; exit 1; }
-
-#to see if we really need to delete installer
-
 spinner_stop ok "Roblox Installed!"
 
 spinner_start "Preparing Roblox.."
